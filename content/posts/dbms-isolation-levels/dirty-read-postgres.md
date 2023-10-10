@@ -1,7 +1,7 @@
 +++
 title = 'Dirty Read in Postgres'
 date = 2023-10-08T12:22:45+03:00
-draft = true
+draft = false
 tags = ['dbms', 'postgres']
 +++
 
