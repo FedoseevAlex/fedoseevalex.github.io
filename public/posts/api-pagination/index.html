@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <title>Api Pagination - Some notes of mine</title>
+
+    
+    
+    <meta name="description" content="Пагинация на бэкенде полезна при работе с большими объемами данных.
+В случаях когда на фронтенде уже нет возможности загрузить весь объем данных и управлять им на помощь придет бэкенд пагинация.
+Ниже посмотрим на способы организации пагинации на бэкенде.
+Pagination methods Offset and limit pagination Самый прямолинейный и простой способ. Мы предоставляем пользователю API параметра limit и offset.
+Подход к выдаче нужной страницы будет выглядеть так:
+Получаем выборку всех подходящих под запрос данных." />
+    <meta name="author" content="" />
+    
+
+    <link href="https://unpkg.com/@master/normal.css" rel="stylesheet">
+    <script src="https://unpkg.com/@master/style@1.5.0"></script>
+    <script src="https://unpkg.com/@master/styles@1.13.0"></script>
+    <script src="https://unpkg.com/master-styles-group"></script>
+    <script src="https://unpkg.com/themes.js"></script>
+    <script>window.themes = window.themes || new window.Themes()</script>
+
+    <style>
+        :root {
+            --font-sans: "Inter var", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+        }
+    </style></head>
+<body class="bg:fade-84@dark font:fade-16@dark font:sans">
+    <nav class="w:full h:90 fixed bg:fade-84/.95@dark bg:white z:1000">
+    <div class="
+        h:full
+        w:full
+        max-w:1200
+        mx:auto
+        px:32
+        d:flex
+        align-items:center
+    ">
+        <div>
+            <a href="/" class="mr-3 font:extralight">
+              
+              Some notes of mine
+              
+            </a>
+        </div>
+
+        <div class="ml:auto">
+            
+            
+            
+        </div>
+    </div>
+</nav>
+<div class="d:flex flex:column@<=sm pt:90 px:24 jc:center gap:44 word-break:break-word">
+        <div class="max-w:700 w:full box:content-box">
+<article class="box:border-box pt:32">
+    <header class="mb:32">
+        <div class="font:40 font:extrabold">Api Pagination</div>
+        <div class="mt:16 f:fade-60">
+            <time>Mar 15, 2024</time>
+            </div>
+    </header><div class="
+    _:where(a):hover{text-decoration-color:fade}
+    _:where(a){text-decoration:2;underline;fade-10;_text-decoration-color:fade-70@dark}
+    _:where(blockquote){bl:5;solid;fade-76/.1;_bl:5;solid;fade-34/.1@dark}
+    _:where(code){font:90%;_v:middle}
+    _:where(code:not(.highlight_*,pre_*)){p:2;6;_r:4}
+    _:where(del){text-decoration:1;line-through;fade-68;_text-decoration-color:red-64@dark}
+    _:where(figcaption){text:14;_p:10;20;0;_width:fit;_mx:auto;_font:fade-56;_font:fade-57@dark}
+    _:where(h1){font:40;_font:extrabold}
+    _:where(h1,h2,h3)+:where(h1,h2,h3){mt:.5em}
+    _:where(h1,h2,h3,h4,h5,h6){mt:2em}
+    _:where(h2){mb:1em;_font:32}
+    _:where(h3){font:24}
+    _:where(h4){font:20}
+    _:where(h5){font:16}
+    _:where(h6){font:14}
+    _:where(li)::marker{font:fade-44;_font:fade-68@dark}
+    _:where(li){pl:.375em}
+    _:where(mark){text-decoration:1;underline;#fce016;_bg:transparent;_text-decoration-color:rgb(252;224;22/.5)@dark}
+    _:where(p,li){font:fade-76;_font:16;_line-height:1.65;_font:fade-34@dark}
+    _:where(p,pre,blockquote,figure,ul,ol,table){my:1.125em}
+    >:first-child{mt:0!}
+    _:where(pre){p:20;_r:8;_overflow:auto}
+    _:where(pre,code:not(.highlight_*)){bg:fade-2;_bg:fade-92!@dark}
+    _:where(strong,b,a,code:not(.highlight_*),mark,del){font:fade-92;_font:fade-12@dark}
+    _:where(table){width:full;_border-spacing:0}
+    _:where(td){v:baseline}
+    _:where(td,th):first-child{pl:0}
+    _:where(td,th):last-child{pr:0}
+    _:where(td,th){bb:1;solid;fade-92/.06;_p:6;_b:fade-4/.04@dark}
+    _:where(th){font:fade-78;_font:14;_text:left;_font:fade-12@dark}
+    _:where(th,p_code,li_code,a,mark){font:semibold;_font:medium@dark}
+    _:where(ul){list-style-type:disc}
+    _:where(ul,ol,blockquote){pl:1.5em}
+    _:where(video,img){max-width:full}
+    _:where(a,mark){text-underline-offset:3}
+    _:where(hr){h:2;_bg:fade-10;_bg:fade-70@dark;_my:3em}
+"><p>Пагинация на бэкенде полезна при работе с большими объемами данных.<br>
+В случаях когда на фронтенде уже нет возможности загрузить весь объем данных и управлять им на помощь придет бэкенд пагинация.<br>
+Ниже посмотрим на способы организации пагинации на бэкенде.</p>
+<h2 id="pagination-methods">Pagination methods</h2>
+<h3 id="offset-and-limit-pagination">Offset and limit pagination</h3>
+<p>Самый прямолинейный и простой способ. Мы предоставляем пользователю API параметра <code>limit</code> и <code>offset</code>.<br>
+Подход к выдаче нужной страницы будет выглядеть так:</p>
+<ol>
+<li>Получаем выборку всех подходящих под запрос данных.</li>
+<li>Пропускаем количество записей с начала, которое указано в параметре <code>offset</code>.</li>
+<li>После пропуска параметров выдаем количество записей, указанное в параметре <code>limit</code>.</li>
+</ol>
+<p>Посмотрим на примере <code>limit = 2</code> и <code>offset = 4</code>.<br>
+Первые четыре записи будут пропущены и две после них отобраны в результат.</p>
+<table>
+<thead>
+<tr>
+<th>record_id</th>
+<th>action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>skip</td>
+</tr>
+<tr>
+<td>2</td>
+<td>skip</td>
+</tr>
+<tr>
+<td>3</td>
+<td>skip</td>
+</tr>
+<tr>
+<td>4</td>
+<td>skip</td>
+</tr>
+<tr>
+<td>5</td>
+<td>take</td>
+</tr>
+<tr>
+<td>6</td>
+<td>take</td>
+</tr>
+<tr>
+<td>&hellip;</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>В SQL для этого есть соответствующие ключевые слова <code>limit</code> и <code>offset</code>.<br>
+В MongoDB можно использовать <code>limit</code> и <code>skip</code> или же <code>slice</code> для подобного.</p>
+<p>Плюсы:</p>
+<ul>
+<li>Простой подход.</li>
+<li>Возможно выполнить переход на любую страницу и запрашивать страницы параллельно.</li>
+<li>Нет состояния. Нужная страница определяется только через <code>limit</code> и <code>offset</code>.</li>
+</ul>
+<p>Минусы:</p>
+<ul>
+<li>Может возвращать разный набор записей при повторном запросе одной и той же страницы.</li>
+<li>Ключевое слово SQL <code>offset</code> все равно требует выборки <code>offset + limit</code> записей. Следовательно, при большом <code>offset</code> обработка запроса может требовать больше ресурсов и времени. (<a href="https://www.postgresql.org/docs/current/queries-limit.html">OFFSET in postgres</a>, <a href="https://dev.mysql.com/doc/refman/8.0/en/limit-optimization.html">LIMIT in mysql</a>).</li>
+</ul>
+<h3 id="keyset-pagination">Keyset pagination</h3>
+<p>Более сложный способ, но дает больше стабильности и лучше масштабируется.</p>
+<p>Суть состоит в том, чтобы вместе с каждым набором результатов давать ключ для получения следующей страницы. Ключ это значение в поле поиска с которого нужно будет возвращать результаты. Для этих целей нужно будет добавить значения <code>since</code>  и <code>limit</code> в запрос выдачи результатов.<br>
+В ответе на каждый запрос придется выдавать ключ для начала следующей страницы результатов <code>since_next</code>.<br>
+Например, имеем таблицу с полем поиска <code>record_id</code>:</p>
+<table>
+<thead>
+<tr>
+<th>record_id</th>
+<th>data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>data 1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>data 2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>data 3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>data 4</td>
+</tr>
+<tr>
+<td>5</td>
+<td>data 5</td>
+</tr>
+<tr>
+<td>6</td>
+<td>data 6</td>
+</tr>
+<tr>
+<td>&hellip;</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Запрос первых двух результатов потребует параметров <code>since=null</code> и <code>limit=2</code>, а в ответе мы получим <code>since_next=3</code>.<br>
+Запрос следующей страницы уже будет выглядеть так: <code>since=3</code> <code>limit=2</code>. И так далее до тех пор пока <code>since_next</code> не окажется пустым.</p>
+<p>Такой подход можно подстроить под любые нужды. Если в поле поиска будет временная метка записи и сортировка по убыванию, то в первой странице всегда будут самые новые записи.<br>
+Если в поле поиска будет порядковый номер и сортировка по возрастанию, то новые записи будут оказываться в конце.</p>
+<p>Плюсы:</p>
+<ul>
+<li>Стабильная выдача вне зависимости от добавления/удаления данных.</li>
+<li>Такой подход может эффективно работать и при большом количестве данных.</li>
+</ul>
+<p>Минусы:</p>
+<ul>
+<li>Требуется упорядоченный тип данных в поле по которому будет вестись поиск.</li>
+<li>Для хорошей производительности в случае использования реляционных баз требуется индекс по полю поиска.</li>
+<li>Нельзя просто получить любую страницу. (Технически, конечно можно, но это ненадежно.) Плюс ко всему вряд ли удастся параллельно запрашивать страницы.</li>
+<li>Такой подход может раскрывать внутреннее устройство данных.</li>
+</ul>
+<h3 id="cursor-based-pagination">Cursor based pagination</h3>
+<p>Обобщение keyset pagination которое может упростить жизнь разработчикам.<br>
+Мы точно также как и в предыдущем способе в ответ помещаем значение для получения следующей страницы. Только в данном случае это значение уже не просто ключ таблицы, а курсор.<br>
+Курсор это указатель на позицию в наборе данных. Он должен быть неявным и передаваться в неизменном виде.<br>
+Самое интересное, что под значением курсора могут быть скрыты разные механизмы пагинации.</p>
+<p>Рассмотрим пару вариантов курсоров на примере. Будем использовать тот же набор полей, что и в предыдущем случае: <code>since_next</code>, <code>since</code> и <code>limit</code>.</p>
+<table>
+<thead>
+<tr>
+<th>record_id</th>
+<th>data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>data 1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>data 2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>data 3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>data 4</td>
+</tr>
+<tr>
+<td>5</td>
+<td>data 5</td>
+</tr>
+<tr>
+<td>6</td>
+<td>data 6</td>
+</tr>
+<tr>
+<td>&hellip;</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Запрос первой страницы <code>since=null</code> <code>limit=2</code>. В ответ получим две записи и <code>since_next=eyJvZmZzZXQiOiAyfQo=</code>.<br>
+Запрос второй страницы <code>since=eyJvZmZzZXQiOiAyfQo=</code> <code>limit=2</code>. В ответ получим еще 2 записи и <code>since_next=eyJvZmZzZXQiOiA0fQo=</code>.</p>
+<p>В данном случае под курсором скрыта offset/limit пагинация. Значение <code>since_next</code> это json в формате base64.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>echo <span style="color:#e6db74">&#39;{&#34;offset&#34;: 2}&#39;</span> | base64 -&gt; eyJvZmZzZXQiOiAyfQo<span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>echo <span style="color:#e6db74">&#39;{&#34;offset&#34;: 4}&#39;</span> | base64 -&gt; eyJvZmZzZXQiOiA0fQo<span style="color:#f92672">=</span>
+</span></span></code></pre></div><p>По аналогии, под курсором может скрываться и keyset пагинация.</p>
+<p>Плюсы:</p>
+<ul>
+<li>Все плюсы keyset пагинации.</li>
+<li>Позволяет изменять способ пагинации не меняя API.</li>
+</ul>
+<p>Минусы:</p>
+<ul>
+<li>Более сложная реализация.</li>
+<li>Для получения страницы <code>N</code> нужно будет выполнить столько же запросов.</li>
+<li>Сложно отлаживать при разработке.</li>
+</ul>
+</div></article>
+<footer class="py:24">
+    <div class="f:fade-30 f:14 mb:8"></div>
+    <div class="f:fade-60 f:12">Theme <a class="f:bold" href="https://github.com/serkodev/holy" _target="_blank">Holy</a></div>
+</footer></div>
+    </div>
+</body>
+
+</html>

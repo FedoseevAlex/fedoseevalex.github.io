@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <title>AWS Grace Period Caveat - Some notes of mine</title>
+
+    
+    
+    <meta name="description" content="Недавно понадобилось добавить наполнение кеша на старте сервиса.
+Задача понятная, на старте грузим данные в кеш, потом периодически его обновляем. Все было хорошо пока не настало время деплоя сервиса.
+Что пошло не так? Код слит, CI работает, а сервис поднимается и сразу же оказывается отключен ECS по результатам health check. В логах все хорошо, видно как сервис стартует без ошибок.
+Что же делать? Естественно, при проблемах с health check я полез смотреть настройки ELB health check для соответствующей target group." />
+    <meta name="author" content="" />
+    
+
+    <link href="https://unpkg.com/@master/normal.css" rel="stylesheet">
+    <script src="https://unpkg.com/@master/style@1.5.0"></script>
+    <script src="https://unpkg.com/@master/styles@1.13.0"></script>
+    <script src="https://unpkg.com/master-styles-group"></script>
+    <script src="https://unpkg.com/themes.js"></script>
+    <script>window.themes = window.themes || new window.Themes()</script>
+
+    <style>
+        :root {
+            --font-sans: "Inter var", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+        }
+    </style></head>
+<body class="bg:fade-84@dark font:fade-16@dark font:sans">
+    <nav class="w:full h:90 fixed bg:fade-84/.95@dark bg:white z:1000">
+    <div class="
+        h:full
+        w:full
+        max-w:1200
+        mx:auto
+        px:32
+        d:flex
+        align-items:center
+    ">
+        <div>
+            <a href="/" class="mr-3 font:extralight">
+              
+              Some notes of mine
+              
+            </a>
+        </div>
+
+        <div class="ml:auto">
+            
+            
+            
+        </div>
+    </div>
+</nav>
+<div class="d:flex flex:column@<=sm pt:90 px:24 jc:center gap:44 word-break:break-word">
+        <div class="max-w:700 w:full box:content-box">
+<article class="box:border-box pt:32">
+    <header class="mb:32">
+        <div class="font:40 font:extrabold">AWS Grace Period Caveat</div>
+        <div class="mt:16 f:fade-60">
+            <time>Sep 18, 2023</time>
+            </div>
+    </header><div class="
+    _:where(a):hover{text-decoration-color:fade}
+    _:where(a){text-decoration:2;underline;fade-10;_text-decoration-color:fade-70@dark}
+    _:where(blockquote){bl:5;solid;fade-76/.1;_bl:5;solid;fade-34/.1@dark}
+    _:where(code){font:90%;_v:middle}
+    _:where(code:not(.highlight_*,pre_*)){p:2;6;_r:4}
+    _:where(del){text-decoration:1;line-through;fade-68;_text-decoration-color:red-64@dark}
+    _:where(figcaption){text:14;_p:10;20;0;_width:fit;_mx:auto;_font:fade-56;_font:fade-57@dark}
+    _:where(h1){font:40;_font:extrabold}
+    _:where(h1,h2,h3)+:where(h1,h2,h3){mt:.5em}
+    _:where(h1,h2,h3,h4,h5,h6){mt:2em}
+    _:where(h2){mb:1em;_font:32}
+    _:where(h3){font:24}
+    _:where(h4){font:20}
+    _:where(h5){font:16}
+    _:where(h6){font:14}
+    _:where(li)::marker{font:fade-44;_font:fade-68@dark}
+    _:where(li){pl:.375em}
+    _:where(mark){text-decoration:1;underline;#fce016;_bg:transparent;_text-decoration-color:rgb(252;224;22/.5)@dark}
+    _:where(p,li){font:fade-76;_font:16;_line-height:1.65;_font:fade-34@dark}
+    _:where(p,pre,blockquote,figure,ul,ol,table){my:1.125em}
+    >:first-child{mt:0!}
+    _:where(pre){p:20;_r:8;_overflow:auto}
+    _:where(pre,code:not(.highlight_*)){bg:fade-2;_bg:fade-92!@dark}
+    _:where(strong,b,a,code:not(.highlight_*),mark,del){font:fade-92;_font:fade-12@dark}
+    _:where(table){width:full;_border-spacing:0}
+    _:where(td){v:baseline}
+    _:where(td,th):first-child{pl:0}
+    _:where(td,th):last-child{pr:0}
+    _:where(td,th){bb:1;solid;fade-92/.06;_p:6;_b:fade-4/.04@dark}
+    _:where(th){font:fade-78;_font:14;_text:left;_font:fade-12@dark}
+    _:where(th,p_code,li_code,a,mark){font:semibold;_font:medium@dark}
+    _:where(ul){list-style-type:disc}
+    _:where(ul,ol,blockquote){pl:1.5em}
+    _:where(video,img){max-width:full}
+    _:where(a,mark){text-underline-offset:3}
+    _:where(hr){h:2;_bg:fade-10;_bg:fade-70@dark;_my:3em}
+"><p>Недавно понадобилось добавить наполнение кеша на старте сервиса.<br>
+Задача понятная, на старте грузим данные в кеш, потом периодически его обновляем. Все было хорошо пока не настало время деплоя сервиса.</p>
+<h2 id="что-пошло-не-так">Что пошло не так?</h2>
+<p>Код слит, CI работает, а сервис поднимается и сразу же оказывается отключен ECS по результатам health check. В логах все хорошо, видно как сервис стартует без ошибок.</p>
+<p>Что же делать? Естественно, при проблемах с health check я полез смотреть настройки <a href="https://docs.aws.amazon.com/elasticloadbalancing/index.html">ELB</a> health check для соответствующей <a href="https://docs.aws.amazon.com/AmazonECS/latest/userguide/create-network-load-balancer.html">target group</a>.<br>
+Там были такие настройки:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Healthy threshold</td>
+<td>5 consecutive health check passed</td>
+</tr>
+<tr>
+<td>Unhealthy threshold</td>
+<td>2 consecutive health check failures</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>5 seconds</td>
+</tr>
+<tr>
+<td>Interval</td>
+<td>30 seconds</td>
+</tr>
+</tbody>
+</table>
+<p>Из этих настроек получается, что после старта сервиса каждые 30 секунд балансировщик будет посылать запросы на указанный health check URL. Через 2 запроса (60 сек) сервис считается нерабочим и будет удален.</p>
+<p>Все эти данные навели на мысль, что надо бы измерить время запуска сервиса. Добавил логи на старте сервиса и запустил его еще раз чтобы собрать данные. Сервис стартовал где-то за 80 ± 5 секунд. Стало понятно куда копать.</p>
+<h2 id="пробуем-решить-проблему">Пробуем решить проблему</h2>
+<p>Первым делом выйдем в интернет за готовым решением проблемы. Вот самое информативное, что удалось найти по проблеме:</p>
+<ul>
+<li><a href="https://repost.aws/knowledge-center/elb-ecs-tasks-improperly-replaced">https://repost.aws/knowledge-center/elb-ecs-tasks-improperly-replaced</a></li>
+<li><a href="https://repost.aws/knowledge-center/ecs-fargate-health-check-failures">https://repost.aws/knowledge-center/ecs-fargate-health-check-failures</a></li>
+<li><a href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html">https://docs.aws.amazon.com/autoscaling/ec2/userguide/health-check-grace-period.html</a></li>
+</ul>
+<p>Готового решения не нашлось, но были интересные записи про health check grace period. Это время, в которое EСS игнорирует &ldquo;unhealthy&rdquo; статус сервиса. Кажется, то, что нужно.</p>
+<h3 id="какие-варианты-решения-можно-придумать-после-исследования-проблемы">Какие варианты решения можно придумать после исследования проблемы?</h3>
+<ol>
+<li>Поставить health check grace period в настройках сервиса в ECS равным 120 секундам</li>
+<li>Повысить Unhealthy threshold до 5 consecutive health check failures</li>
+<li>Увеличить интервал проверок до 60 секунд</li>
+<li>Переделать сервис чтобы он сначала отвечал на health check URL, а потом в фоне загружал все что требуется</li>
+</ol>
+<p>Сразу же был отброшен 4 вариант, так как запущенный сервис не может нормально работать без кеша. Вариант номер 3 не подошел, так как при такой настройке сломанный сервис может 2 минуты выдавать ошибки пользователям и не будет автоматически перезапущен. По той же причине не подошел и вариант 2. Решено попробовать 1 вариант.</p>
+<p>Я установил health check grace period равным 120 секундам и стал следить за сервисом. Удивительно, но поведение не поменялось. Сервис все также выключался после запуска. Только теперь с момента запуска и до выключения проходило 120 секунд.</p>
+<p>В этот момент я пошел к коллеге, который уже решал такую проблему (почему я сразу этого не сделал?). Оказалось, что взаимодействие между ELB и ECS сложнее, чем казалось.
+<img src="ecs_elb_interaction.png" alt="ecs_elb_interaction"></p>
+<p>Во-первых, надо учитывать, что ELB и ECS это две разные независимые системы.<br>
+Во-вторых, grace_period указывает время в течении которого ECS будет игнорировать уведомления о переходе сервиса в статус Unhealthy от ELB.</p>
+<p>Рассмотрим последовательность событий с такими настройками и предположим, что сервис запускается секунд 75-85:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Healthy threshold</td>
+<td>5 consecutive health check passed</td>
+</tr>
+<tr>
+<td>Unhealthy threshold</td>
+<td>2 consecutive health check failures</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>5 seconds</td>
+</tr>
+<tr>
+<td>Interval</td>
+<td>30 seconds</td>
+</tr>
+<tr>
+<td>Grace period</td>
+<td>120 seconds</td>
+</tr>
+</tbody>
+</table>
+<p><img src="faulty_timeline.png" alt="faulty_timeline"></p>
+<p>Статус сервиса для ELB по-умолчанию &ldquo;healthy&rdquo;. При этом проверка работоспособности не проходит, так как сервис еще запускается. После двух последовательных проверок статус сервиса в ELB меняется на &ldquo;unhealthy&rdquo;. Чтобы статус изменился на &ldquo;healthy&rdquo; нужно 5 последовательных успешных проверок. Такое бы заняло еще 150 секунд. Однако, за время &ldquo;grace period&rdquo; (120 секунд) статус не успеет измениться. Поэтому по окончании 120 секунд мы будем иметь на самом деле работающий сервис со статусом &ldquo;unhealthy&rdquo; по мнению ELB. Балансировщик после grace period отправит &ldquo;unhealthy&rdquo; статус сервиса в ECS и он удалит контейнер. Будем иметь рабочий по внешним признакам сервис, который постоянно перезапускается.</p>
+<h2 id="что-в-итоге">Что в итоге?</h2>
+<p>После разъяснения причин такого поведения стало понятно как можно избежать удаления сервиса по истечении grace period.
+Нужно таким образом подобрать значения для threshold, interval и grace period чтобы выполнилось что-то одно:</p>
+<ol>
+<li>Контейнер не успел получить status: unhealthy во время запуска</li>
+<li>Контейнер успел получить status: healthy до истечения grace period
+У меня заработало выполнение 2 условия с такими настройками:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Healthy threshold</td>
+<td>2 consecutive health check passed</td>
+</tr>
+<tr>
+<td>Unhealthy threshold</td>
+<td>2 consecutive health check failures</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>2 seconds</td>
+</tr>
+<tr>
+<td>Interval</td>
+<td>5 seconds</td>
+</tr>
+<tr>
+<td>Grace period</td>
+<td>120 seconds</td>
+</tr>
+</tbody>
+</table>
+<p>С такими настройками сервис поднялся за ~80 секунд и на 90 секунде уже получил статус healthy.
+<img src="success_timeline.png" alt="success_timeline">
+По окончании grace period сервис был в нужном статусе и у ECS не было причин удалять контейнер сервиса.</p>
+</div></article>
+<footer class="py:24">
+    <div class="f:fade-30 f:14 mb:8"></div>
+    <div class="f:fade-60 f:12">Theme <a class="f:bold" href="https://github.com/serkodev/holy" _target="_blank">Holy</a></div>
+</footer></div>
+    </div>
+</body>
+
+</html>

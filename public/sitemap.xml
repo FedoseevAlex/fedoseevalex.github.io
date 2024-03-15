@@ -2,10 +2,45 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://fedoseevalex.github.io/categories/</loc>
+    <loc>http://localhost:1313/posts/api-pagination/</loc>
+    <lastmod>2024-03-15T16:29:38+02:00</lastmod>
   </url><url>
-    <loc>https://fedoseevalex.github.io/</loc>
+    <loc>http://localhost:1313/posts/</loc>
+    <lastmod>2024-03-15T16:29:38+02:00</lastmod>
   </url><url>
-    <loc>https://fedoseevalex.github.io/tags/</loc>
+    <loc>http://localhost:1313/</loc>
+    <lastmod>2024-03-15T16:29:38+02:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/golang-prepend/</loc>
+    <lastmod>2024-01-13T14:03:30+02:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/http-response-compression/</loc>
+    <lastmod>2023-10-31T21:59:06+02:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/dbms/</loc>
+    <lastmod>2023-10-08T12:32:05+03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/phantom-read-postgres/</loc>
+    <lastmod>2023-10-08T12:32:05+03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/postgres/</loc>
+    <lastmod>2023-10-08T12:32:05+03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/tags/</loc>
+    <lastmod>2023-10-08T12:32:05+03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/non-repeatable-read-postgres/</loc>
+    <lastmod>2023-10-08T12:31:54+03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/dirty-read-postgres/</loc>
+    <lastmod>2023-10-08T12:22:45+03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/isolation-levels/</loc>
+    <lastmod>2023-10-06T22:01:30+03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/aws-grace-period-caveat/</loc>
+    <lastmod>2023-09-18T18:29:19+03:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/categories/</loc>
   </url>
 </urlset>

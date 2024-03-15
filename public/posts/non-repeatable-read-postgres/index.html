@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <title>Non Repeatable Read Postgres - Some notes of mine</title>
+
+    
+    
+    <meta name="description" content="Подготовка Открываем терминал и стартуем контейнер с базой. Если уже есть готовая база, то этот шаг можно пропустить.
+docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres Создаем простую схему базы и заполняем ее случайными данными:
+CREATE TABLE test ( field integer PRIMARY KEY, description text ); INSERT INTO test (field, description) VALUES (1, &#39;row 1&#39;), (2, &#39;row 2&#39;), (3, &#39;row 3&#39;), (4, &#39;row 4&#39;); Isolation Level Dirty Read Nonrepeatable Read Phantom Read Serialization Anomaly Read uncommitted Allowed, but not in PG Possible Possible Possible Read committed Not possible Possible Possible Possible Repeatable read Not possible Not possible Allowed, but not in PG Possible Serializable Not possible Not possible Not possible Not possible Воспроизводим non repeatable read Пытаемся увидеть, что внутри одной транзакции мы можем получить разные данные на один и тот же запрос." />
+    <meta name="author" content="" />
+    
+
+    <link href="https://unpkg.com/@master/normal.css" rel="stylesheet">
+    <script src="https://unpkg.com/@master/style@1.5.0"></script>
+    <script src="https://unpkg.com/@master/styles@1.13.0"></script>
+    <script src="https://unpkg.com/master-styles-group"></script>
+    <script src="https://unpkg.com/themes.js"></script>
+    <script>window.themes = window.themes || new window.Themes()</script>
+
+    <style>
+        :root {
+            --font-sans: "Inter var", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+        }
+    </style></head>
+<body class="bg:fade-84@dark font:fade-16@dark font:sans">
+    <nav class="w:full h:90 fixed bg:fade-84/.95@dark bg:white z:1000">
+    <div class="
+        h:full
+        w:full
+        max-w:1200
+        mx:auto
+        px:32
+        d:flex
+        align-items:center
+    ">
+        <div>
+            <a href="/" class="mr-3 font:extralight">
+              
+              Some notes of mine
+              
+            </a>
+        </div>
+
+        <div class="ml:auto">
+            
+            
+            
+        </div>
+    </div>
+</nav>
+<div class="d:flex flex:column@<=sm pt:90 px:24 jc:center gap:44 word-break:break-word">
+        <div class="max-w:700 w:full box:content-box">
+<article class="box:border-box pt:32">
+    <header class="mb:32">
+        <div class="font:40 font:extrabold">Non Repeatable Read Postgres</div>
+        <div class="mt:16 f:fade-60">
+            <time>Oct 8, 2023</time>
+            </div>
+    </header><div class="
+    _:where(a):hover{text-decoration-color:fade}
+    _:where(a){text-decoration:2;underline;fade-10;_text-decoration-color:fade-70@dark}
+    _:where(blockquote){bl:5;solid;fade-76/.1;_bl:5;solid;fade-34/.1@dark}
+    _:where(code){font:90%;_v:middle}
+    _:where(code:not(.highlight_*,pre_*)){p:2;6;_r:4}
+    _:where(del){text-decoration:1;line-through;fade-68;_text-decoration-color:red-64@dark}
+    _:where(figcaption){text:14;_p:10;20;0;_width:fit;_mx:auto;_font:fade-56;_font:fade-57@dark}
+    _:where(h1){font:40;_font:extrabold}
+    _:where(h1,h2,h3)+:where(h1,h2,h3){mt:.5em}
+    _:where(h1,h2,h3,h4,h5,h6){mt:2em}
+    _:where(h2){mb:1em;_font:32}
+    _:where(h3){font:24}
+    _:where(h4){font:20}
+    _:where(h5){font:16}
+    _:where(h6){font:14}
+    _:where(li)::marker{font:fade-44;_font:fade-68@dark}
+    _:where(li){pl:.375em}
+    _:where(mark){text-decoration:1;underline;#fce016;_bg:transparent;_text-decoration-color:rgb(252;224;22/.5)@dark}
+    _:where(p,li){font:fade-76;_font:16;_line-height:1.65;_font:fade-34@dark}
+    _:where(p,pre,blockquote,figure,ul,ol,table){my:1.125em}
+    >:first-child{mt:0!}
+    _:where(pre){p:20;_r:8;_overflow:auto}
+    _:where(pre,code:not(.highlight_*)){bg:fade-2;_bg:fade-92!@dark}
+    _:where(strong,b,a,code:not(.highlight_*),mark,del){font:fade-92;_font:fade-12@dark}
+    _:where(table){width:full;_border-spacing:0}
+    _:where(td){v:baseline}
+    _:where(td,th):first-child{pl:0}
+    _:where(td,th):last-child{pr:0}
+    _:where(td,th){bb:1;solid;fade-92/.06;_p:6;_b:fade-4/.04@dark}
+    _:where(th){font:fade-78;_font:14;_text:left;_font:fade-12@dark}
+    _:where(th,p_code,li_code,a,mark){font:semibold;_font:medium@dark}
+    _:where(ul){list-style-type:disc}
+    _:where(ul,ol,blockquote){pl:1.5em}
+    _:where(video,img){max-width:full}
+    _:where(a,mark){text-underline-offset:3}
+    _:where(hr){h:2;_bg:fade-10;_bg:fade-70@dark;_my:3em}
+"><h3 id="подготовка">Подготовка</h3>
+<p>Открываем терминал и стартуем контейнер с базой. Если уже есть готовая база, то этот шаг можно пропустить.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres
+</span></span></code></pre></div><p>Создаем простую схему базы и заполняем ее случайными данными:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">CREATE</span> <span style="color:#66d9ef">TABLE</span> test (
+</span></span><span style="display:flex;"><span>    field integer <span style="color:#66d9ef">PRIMARY</span> <span style="color:#66d9ef">KEY</span>,
+</span></span><span style="display:flex;"><span>    description text
+</span></span><span style="display:flex;"><span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">INSERT</span> <span style="color:#66d9ef">INTO</span> test (field, description)
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">VALUES</span>
+</span></span><span style="display:flex;"><span>    (<span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#39;row 1&#39;</span>),
+</span></span><span style="display:flex;"><span>    (<span style="color:#ae81ff">2</span>, <span style="color:#e6db74">&#39;row 2&#39;</span>),
+</span></span><span style="display:flex;"><span>    (<span style="color:#ae81ff">3</span>, <span style="color:#e6db74">&#39;row 3&#39;</span>),
+</span></span><span style="display:flex;"><span>    (<span style="color:#ae81ff">4</span>, <span style="color:#e6db74">&#39;row 4&#39;</span>);
+</span></span></code></pre></div><table>
+<thead>
+<tr>
+<th>Isolation Level</th>
+<th>Dirty Read</th>
+<th>Nonrepeatable Read</th>
+<th>Phantom Read</th>
+<th>Serialization Anomaly</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read uncommitted</td>
+<td>Allowed, but not in PG</td>
+<td>Possible</td>
+<td>Possible</td>
+<td>Possible</td>
+</tr>
+<tr>
+<td>Read committed</td>
+<td>Not possible</td>
+<td>Possible</td>
+<td>Possible</td>
+<td>Possible</td>
+</tr>
+<tr>
+<td>Repeatable read</td>
+<td>Not possible</td>
+<td>Not possible</td>
+<td>Allowed, but not in PG</td>
+<td>Possible</td>
+</tr>
+<tr>
+<td>Serializable</td>
+<td>Not possible</td>
+<td>Not possible</td>
+<td>Not possible</td>
+<td>Not possible</td>
+</tr>
+</tbody>
+</table>
+<h3 id="воспроизводим-non-repeatable-read">Воспроизводим non repeatable read</h3>
+<p>Пытаемся увидеть, что внутри одной транзакции мы можем получить разные данные на один и тот же запрос.
+То есть два последовательных одинаковых запроса могут вернуть нам отличающиеся наборы данных в зависимости от результата работы других транзакций.
+Берем первый терминал, открываем транзакцию с уровнем read committed и делаем запрос на получение данных из таблицы.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">BEGIN</span> <span style="color:#66d9ef">TRANSACTION</span> <span style="color:#66d9ef">ISOLATION</span> <span style="color:#66d9ef">LEVEL</span> <span style="color:#66d9ef">READ</span> <span style="color:#66d9ef">COMMITTED</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> test;
+</span></span></code></pre></div><p>Получаем наши четыре строки с данными.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> field | description
+</span></span><span style="display:flex;"><span>-------+-------------
+</span></span><span style="display:flex;"><span>     1 | row 1
+</span></span><span style="display:flex;"><span>     2 | row 2
+</span></span><span style="display:flex;"><span>     3 | row 3
+</span></span><span style="display:flex;"><span>     4 | row 4
+</span></span><span style="display:flex;"><span>(4 rows)
+</span></span></code></pre></div><p>Затем берем второй терминал и открываем такую же транзакцию. В этом терминале мы изменим описания у всех строк.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">BEGIN</span> <span style="color:#66d9ef">TRANSACTION</span> <span style="color:#66d9ef">ISOLATION</span> <span style="color:#66d9ef">LEVEL</span> <span style="color:#66d9ef">READ</span> <span style="color:#66d9ef">COMMITTED</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">UPDATE</span> test <span style="color:#66d9ef">SET</span> description <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;wow, new description&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">COMMIT</span>;
+</span></span></code></pre></div><p>После этого получим такие данные:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> field |     description
+</span></span><span style="display:flex;"><span>-------+----------------------
+</span></span><span style="display:flex;"><span>     1 | wow, new description
+</span></span><span style="display:flex;"><span>     2 | wow, new description
+</span></span><span style="display:flex;"><span>     3 | wow, new description
+</span></span><span style="display:flex;"><span>     4 | wow, new description
+</span></span><span style="display:flex;"><span>(4 rows)
+</span></span></code></pre></div><p>Возвращаемся в первый терминал и повторяем запрос.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> test;
+</span></span></code></pre></div><p>Мы увидим, что набор данных у нас изменился.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> field |     description
+</span></span><span style="display:flex;"><span>-------+----------------------
+</span></span><span style="display:flex;"><span>     1 | wow, new description
+</span></span><span style="display:flex;"><span>     2 | wow, new description
+</span></span><span style="display:flex;"><span>     3 | wow, new description
+</span></span><span style="display:flex;"><span>     4 | wow, new description
+</span></span><span style="display:flex;"><span>(4 rows)
+</span></span></code></pre></div><p>Как мы видим, транзакция из второго терминала завершилась и ее результат видно из первого терминала. В случае более сложных запросов могут быть не те данные, которые мы видели в начале транзакции. Допустим, в первый раз мы выбрали данные с каким-то условием и получили одну строку. Внешняя транзакция поменяла данные и теперь под наше условие уже подходит две строки. А в нашем сложном запросе мы второй раз делаем выборку и уже можем получить расхождения в данных при дальнейшей работе запроса.</p>
+<p>Попробуем решить эту проблему через повышение уровня изоляции.
+Снова берем первый терминал, открываем транзакцию и получаем все данные.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">BEGIN</span> <span style="color:#66d9ef">TRANSACTION</span> <span style="color:#66d9ef">ISOLATION</span> <span style="color:#66d9ef">LEVEL</span> <span style="color:#66d9ef">REPEATABLE</span> <span style="color:#66d9ef">READ</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> test;
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> field | description
+</span></span><span style="display:flex;"><span>-------+-------------
+</span></span><span style="display:flex;"><span>     1 | row 1
+</span></span><span style="display:flex;"><span>     2 | row 2
+</span></span><span style="display:flex;"><span>     3 | row 3
+</span></span><span style="display:flex;"><span>     4 | row 4
+</span></span><span style="display:flex;"><span>(4 rows)
+</span></span></code></pre></div><p>И берем второй терминал в котором удалим четвертую строку и добавим пятую.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">BEGIN</span> <span style="color:#66d9ef">TRANSACTION</span> <span style="color:#66d9ef">ISOLATION</span> <span style="color:#66d9ef">LEVEL</span> <span style="color:#66d9ef">REPEATABLE</span> <span style="color:#66d9ef">READ</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">UPDATE</span> test <span style="color:#66d9ef">SET</span> description <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;wow, new description&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">COMMIT</span>;
+</span></span></code></pre></div><p>После этого данные у нас должны стать такими:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> field |     description
+</span></span><span style="display:flex;"><span>-------+----------------------
+</span></span><span style="display:flex;"><span>     1 | wow, new description
+</span></span><span style="display:flex;"><span>     2 | wow, new description
+</span></span><span style="display:flex;"><span>     3 | wow, new description
+</span></span><span style="display:flex;"><span>     4 | wow, new description
+</span></span><span style="display:flex;"><span>(4 rows)
+</span></span></code></pre></div><p>Теперь снова смотрим данные в первом терминале.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> test;
+</span></span></code></pre></div><p>Получаем снова те же 4 строки.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> field | description
+</span></span><span style="display:flex;"><span>-------+-------------
+</span></span><span style="display:flex;"><span>     1 | row 1
+</span></span><span style="display:flex;"><span>     2 | row 2
+</span></span><span style="display:flex;"><span>     3 | row 3
+</span></span><span style="display:flex;"><span>     4 | row 4
+</span></span><span style="display:flex;"><span>(4 rows)
+</span></span></code></pre></div><p>Таким образом, получается, что мы всегда будем работать с данными которые были на момент начала транзакции.
+А что будет если в первом терминале попробовать обновить данные в строках и завершить транзакцию?</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">UPDATE</span> test <span style="color:#66d9ef">SET</span> description <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;super new description&#39;</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">COMMIT</span>;
+</span></span></code></pre></div><p>И получим мы в итоге вот такую ошибку.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span>ERROR:  could not serialize access due to concurrent delete
+</span></span><span style="display:flex;"><span>ROLLBACK
+</span></span></code></pre></div><p>Эта ошибка говорит как раз о том, что СУБД заметила, что данные изменились и не дала применить наши изменения на удаленных данных.
+В то же время мы можем выполнить insert в первом терминале:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sql" data-lang="sql"><span style="display:flex;"><span><span style="color:#66d9ef">INSERT</span> <span style="color:#66d9ef">INTO</span> test(field, description) <span style="color:#66d9ef">VALUES</span> (<span style="color:#ae81ff">6</span>, <span style="color:#e6db74">&#39;row 6&#39;</span>);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">COMMIT</span>;
+</span></span></code></pre></div><p>Такое изменение не вызывает конфликтов и поэтому в результате мы получим такое.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-console" data-lang="console"><span style="display:flex;"><span> field | description
+</span></span><span style="display:flex;"><span>-------+-------------
+</span></span><span style="display:flex;"><span>     1 | row 1
+</span></span><span style="display:flex;"><span>     2 | row 2
+</span></span><span style="display:flex;"><span>     3 | row 3
+</span></span><span style="display:flex;"><span>     5 | row 5
+</span></span><span style="display:flex;"><span>     6 | row 6
+</span></span><span style="display:flex;"><span>(5 rows)
+</span></span></code></pre></div><p>В итоге получается, что уровень изоляции repeatable read дает нам возможность работать всегда с данными на момент старта транзакции. При этом результат транзакции будет зависеть от того вызывают ли наши изменения конфликт. Новые данные которые появились в процессе не будут затронуты изменениями. Non repeatable read побежден.</p>
+</div></article>
+<footer class="py:24">
+    <div class="f:fade-30 f:14 mb:8"></div>
+    <div class="f:fade-60 f:12">Theme <a class="f:bold" href="https://github.com/serkodev/holy" _target="_blank">Holy</a></div>
+</footer></div>
+    </div>
+</body>
+
+</html>

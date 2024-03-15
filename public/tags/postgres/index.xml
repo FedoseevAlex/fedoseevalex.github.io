@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Postgres on Some notes of mine</title>
+    <link>http://localhost:1313/tags/postgres/</link>
+    <description>Recent content in Postgres on Some notes of mine</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 08 Oct 2023 12:32:05 +0300</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/postgres/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Phantom Read Postgres</title>
+      <link>http://localhost:1313/posts/phantom-read-postgres/</link>
+      <pubDate>Sun, 08 Oct 2023 12:32:05 +0300</pubDate>
+      <guid>http://localhost:1313/posts/phantom-read-postgres/</guid>
+      <description>Подготовка Открываем терминал и стартуем контейнер с базой. Если уже есть готовая база, то этот шаг можно пропустить.&#xA;docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres Создаем простую схему базы и заполняем ее случайными данными:&#xA;CREATE TABLE test ( field integer PRIMARY KEY, description text ); INSERT INTO test (field, description) VALUES (1, &amp;#39;row 1&amp;#39;), (2, &amp;#39;row 2&amp;#39;), (3, &amp;#39;row 3&amp;#39;), (4, &amp;#39;row 4&amp;#39;); Isolation Level Dirty Read Nonrepeatable Read Phantom Read Serialization Anomaly Read uncommitted Allowed, but not in PG Possible Possible Possible Read committed Not possible Possible Possible Possible Repeatable read Not possible Not possible Allowed, but not in PG Possible Serializable Not possible Not possible Not possible Not possible Воспроизводим phantom read В первом терминале начинаем транзакцию и получаем все строки в у которых поле field нечетное.</description>
+    </item>
+    <item>
+      <title>Non Repeatable Read Postgres</title>
+      <link>http://localhost:1313/posts/non-repeatable-read-postgres/</link>
+      <pubDate>Sun, 08 Oct 2023 12:31:54 +0300</pubDate>
+      <guid>http://localhost:1313/posts/non-repeatable-read-postgres/</guid>
+      <description>Подготовка Открываем терминал и стартуем контейнер с базой. Если уже есть готовая база, то этот шаг можно пропустить.&#xA;docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres Создаем простую схему базы и заполняем ее случайными данными:&#xA;CREATE TABLE test ( field integer PRIMARY KEY, description text ); INSERT INTO test (field, description) VALUES (1, &amp;#39;row 1&amp;#39;), (2, &amp;#39;row 2&amp;#39;), (3, &amp;#39;row 3&amp;#39;), (4, &amp;#39;row 4&amp;#39;); Isolation Level Dirty Read Nonrepeatable Read Phantom Read Serialization Anomaly Read uncommitted Allowed, but not in PG Possible Possible Possible Read committed Not possible Possible Possible Possible Repeatable read Not possible Not possible Allowed, but not in PG Possible Serializable Not possible Not possible Not possible Not possible Воспроизводим non repeatable read Пытаемся увидеть, что внутри одной транзакции мы можем получить разные данные на один и тот же запрос.</description>
+    </item>
+    <item>
+      <title>Dirty Read in Postgres</title>
+      <link>http://localhost:1313/posts/dirty-read-postgres/</link>
+      <pubDate>Sun, 08 Oct 2023 12:22:45 +0300</pubDate>
+      <guid>http://localhost:1313/posts/dirty-read-postgres/</guid>
+      <description>Попробуем воспроизвести dirty read в postgres.&#xA;Подготовка Открываем терминал и стартуем контейнер с базой. Если уже есть готовая база, то этот шаг можно пропустить.&#xA;docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres Создаем простую схему базы и заполняем ее случайными данными:&#xA;CREATE TABLE test ( field integer PRIMARY KEY, description text ); INSERT INTO test (field, description) VALUES (1, &amp;#39;row 1&amp;#39;), (2, &amp;#39;row 2&amp;#39;), (3, &amp;#39;row 3&amp;#39;), (4, &amp;#39;row 4&amp;#39;); У postgresql есть четыре уровня изоляции, однако реально их там три.</description>
+    </item>
+  </channel>
+</rss>

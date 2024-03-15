@@ -1,34 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Some notes of mine</title>
-    <link>http://localhost:1313/</link>
-    <description>Recent content on Some notes of mine</description>
+    <title>Dbms on Some notes of mine</title>
+    <link>http://localhost:1313/tags/dbms/</link>
+    <description>Recent content in Dbms on Some notes of mine</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 15 Mar 2024 16:29:38 +0200</lastBuildDate>
-    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Api Pagination</title>
-      <link>http://localhost:1313/posts/api-pagination/</link>
-      <pubDate>Fri, 15 Mar 2024 16:29:38 +0200</pubDate>
-      <guid>http://localhost:1313/posts/api-pagination/</guid>
-      <description>Пагинация на бэкенде полезна при работе с большими объемами данных.&#xA;В случаях когда на фронтенде уже нет возможности загрузить весь объем данных и управлять им на помощь придет бэкенд пагинация.&#xA;Ниже посмотрим на способы организации пагинации на бэкенде.&#xA;Pagination methods Offset and limit pagination Самый прямолинейный и простой способ. Мы предоставляем пользователю API параметра limit и offset.&#xA;Подход к выдаче нужной страницы будет выглядеть так:&#xA;Получаем выборку всех подходящих под запрос данных.</description>
-    </item>
-    <item>
-      <title>Slice prepend in golang</title>
-      <link>http://localhost:1313/posts/golang-prepend/</link>
-      <pubDate>Sat, 13 Jan 2024 14:03:30 +0200</pubDate>
-      <guid>http://localhost:1313/posts/golang-prepend/</guid>
-      <description>Столкнулся с задачей в которой необходимо была операция prepend (помещение элемента в начало списка). Так как код сервиса написан на golang, то для этого языка проблему и рассмотрим.&#xA;Есть несколько способов положить значение в начало списка. Посмотрим на них по-отдельности. Попытаюсь, как умею, сравнить их производительность и выбрать лучший.&#xA;TLDR Используйте вот такую функцию для операции prepend, так как она самая эффективная.&#xA;func Prepend[T any](value T, arr []T) []T { if len(arr) == 0 { return append(arr, value) } var zeroValue T arr = append(arr, zeroValue) copy(arr[1:], arr) arr[0] = value return arr } Очень простой способ func PrependSimple[T any](value T, arr []T) []T { return append([]T{value}, arr.</description>
-    </item>
-    <item>
-      <title>HTTP response compression</title>
-      <link>http://localhost:1313/posts/http-response-compression/</link>
-      <pubDate>Tue, 31 Oct 2023 21:59:06 +0200</pubDate>
-      <guid>http://localhost:1313/posts/http-response-compression/</guid>
-      <description>Недавно пытался оптимизировать время ответа от веб сервиса. Один из эндпоинтов отдавал данные за 10 секунд, что слишком долго.&#xA;Профилирование кода помогло понять какой шаг обработки запроса тратит большую часть времени.&#xA;Наметился список явных проблем:&#xA;Некоторые данные запрашиваются по несколько раз. Вынес получение данных (где возможно) в этап подготовки выполнения запроса. Местами обработку данных удалось сделать параллельной. В паре мест даже пришлось, наоборот, сделать последовательную обработку для ускорения. В каких-то местах обрабатывались заведомо неподходящие данные.</description>
-    </item>
+    <lastBuildDate>Sun, 08 Oct 2023 12:32:05 +0300</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/dbms/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Phantom Read Postgres</title>
       <link>http://localhost:1313/posts/phantom-read-postgres/</link>
@@ -56,13 +35,6 @@
       <pubDate>Fri, 06 Oct 2023 22:01:30 +0300</pubDate>
       <guid>http://localhost:1313/posts/isolation-levels/</guid>
       <description>У баз данных обычно выделяют четыре уровня изоляции:&#xA;Read Uncommitted Read Commited Repeatable Read Serializable А придумано все это чтобы справится с пятью основными феноменами:&#xA;Dirty write - Изменяющие запросы могут перезаписывать друг друга внутри даже из незавершенных транзакций. Любой уровень изоляции защищает от этой проблемы.&#xA;Dirty read - Транзакция может прочитать данные другой незавершенной транзакции.&#xA;Non repeatable read - Два чтения данных в одной транзакции возвращают измененные наборы данных.</description>
-    </item>
-    <item>
-      <title>AWS Grace Period Caveat</title>
-      <link>http://localhost:1313/posts/aws-grace-period-caveat/</link>
-      <pubDate>Mon, 18 Sep 2023 18:29:19 +0300</pubDate>
-      <guid>http://localhost:1313/posts/aws-grace-period-caveat/</guid>
-      <description>Недавно понадобилось добавить наполнение кеша на старте сервиса.&#xA;Задача понятная, на старте грузим данные в кеш, потом периодически его обновляем. Все было хорошо пока не настало время деплоя сервиса.&#xA;Что пошло не так? Код слит, CI работает, а сервис поднимается и сразу же оказывается отключен ECS по результатам health check. В логах все хорошо, видно как сервис стартует без ошибок.&#xA;Что же делать? Естественно, при проблемах с health check я полез смотреть настройки ELB health check для соответствующей target group.</description>
     </item>
   </channel>
 </rss>

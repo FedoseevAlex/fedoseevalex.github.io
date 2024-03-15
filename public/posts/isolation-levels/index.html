@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html><head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <title>DBMS Isolation Levels - Some notes of mine</title>
+
+    
+    
+    <meta name="description" content="У баз данных обычно выделяют четыре уровня изоляции:
+Read Uncommitted Read Commited Repeatable Read Serializable А придумано все это чтобы справится с пятью основными феноменами:
+Dirty write - Изменяющие запросы могут перезаписывать друг друга внутри даже из незавершенных транзакций. Любой уровень изоляции защищает от этой проблемы.
+Dirty read - Транзакция может прочитать данные другой незавершенной транзакции.
+Non repeatable read - Два чтения данных в одной транзакции возвращают измененные наборы данных." />
+    <meta name="author" content="" />
+    
+
+    <link href="https://unpkg.com/@master/normal.css" rel="stylesheet">
+    <script src="https://unpkg.com/@master/style@1.5.0"></script>
+    <script src="https://unpkg.com/@master/styles@1.13.0"></script>
+    <script src="https://unpkg.com/master-styles-group"></script>
+    <script src="https://unpkg.com/themes.js"></script>
+    <script>window.themes = window.themes || new window.Themes()</script>
+
+    <style>
+        :root {
+            --font-sans: "Inter var", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+        }
+    </style></head>
+<body class="bg:fade-84@dark font:fade-16@dark font:sans">
+    <nav class="w:full h:90 fixed bg:fade-84/.95@dark bg:white z:1000">
+    <div class="
+        h:full
+        w:full
+        max-w:1200
+        mx:auto
+        px:32
+        d:flex
+        align-items:center
+    ">
+        <div>
+            <a href="/" class="mr-3 font:extralight">
+              
+              Some notes of mine
+              
+            </a>
+        </div>
+
+        <div class="ml:auto">
+            
+            
+            
+        </div>
+    </div>
+</nav>
+<div class="d:flex flex:column@<=sm pt:90 px:24 jc:center gap:44 word-break:break-word">
+        <div class="max-w:700 w:full box:content-box">
+<article class="box:border-box pt:32">
+    <header class="mb:32">
+        <div class="font:40 font:extrabold">DBMS Isolation Levels</div>
+        <div class="mt:16 f:fade-60">
+            <time>Oct 6, 2023</time>
+            </div>
+    </header><div class="
+    _:where(a):hover{text-decoration-color:fade}
+    _:where(a){text-decoration:2;underline;fade-10;_text-decoration-color:fade-70@dark}
+    _:where(blockquote){bl:5;solid;fade-76/.1;_bl:5;solid;fade-34/.1@dark}
+    _:where(code){font:90%;_v:middle}
+    _:where(code:not(.highlight_*,pre_*)){p:2;6;_r:4}
+    _:where(del){text-decoration:1;line-through;fade-68;_text-decoration-color:red-64@dark}
+    _:where(figcaption){text:14;_p:10;20;0;_width:fit;_mx:auto;_font:fade-56;_font:fade-57@dark}
+    _:where(h1){font:40;_font:extrabold}
+    _:where(h1,h2,h3)+:where(h1,h2,h3){mt:.5em}
+    _:where(h1,h2,h3,h4,h5,h6){mt:2em}
+    _:where(h2){mb:1em;_font:32}
+    _:where(h3){font:24}
+    _:where(h4){font:20}
+    _:where(h5){font:16}
+    _:where(h6){font:14}
+    _:where(li)::marker{font:fade-44;_font:fade-68@dark}
+    _:where(li){pl:.375em}
+    _:where(mark){text-decoration:1;underline;#fce016;_bg:transparent;_text-decoration-color:rgb(252;224;22/.5)@dark}
+    _:where(p,li){font:fade-76;_font:16;_line-height:1.65;_font:fade-34@dark}
+    _:where(p,pre,blockquote,figure,ul,ol,table){my:1.125em}
+    >:first-child{mt:0!}
+    _:where(pre){p:20;_r:8;_overflow:auto}
+    _:where(pre,code:not(.highlight_*)){bg:fade-2;_bg:fade-92!@dark}
+    _:where(strong,b,a,code:not(.highlight_*),mark,del){font:fade-92;_font:fade-12@dark}
+    _:where(table){width:full;_border-spacing:0}
+    _:where(td){v:baseline}
+    _:where(td,th):first-child{pl:0}
+    _:where(td,th):last-child{pr:0}
+    _:where(td,th){bb:1;solid;fade-92/.06;_p:6;_b:fade-4/.04@dark}
+    _:where(th){font:fade-78;_font:14;_text:left;_font:fade-12@dark}
+    _:where(th,p_code,li_code,a,mark){font:semibold;_font:medium@dark}
+    _:where(ul){list-style-type:disc}
+    _:where(ul,ol,blockquote){pl:1.5em}
+    _:where(video,img){max-width:full}
+    _:where(a,mark){text-underline-offset:3}
+    _:where(hr){h:2;_bg:fade-10;_bg:fade-70@dark;_my:3em}
+"><p>У баз данных обычно выделяют четыре уровня изоляции:</p>
+<ol>
+<li>Read Uncommitted</li>
+<li>Read Commited</li>
+<li>Repeatable Read</li>
+<li>Serializable</li>
+</ol>
+<p>А придумано все это чтобы справится с пятью основными феноменами:<br>
+<strong>Dirty write</strong> - Изменяющие запросы могут перезаписывать друг друга внутри даже из незавершенных транзакций. Любой уровень изоляции защищает от этой проблемы.<br>
+<strong>Dirty read</strong> - Транзакция может прочитать данные другой незавершенной транзакции.<br>
+<strong>Non repeatable read</strong> - Два чтения данных в одной транзакции возвращают измененные наборы данных.<br>
+<strong>Phantom read</strong> - Два запроса получают разные наборы строк.<br>
+<strong>Serialization anomaly</strong> - Это случай когда результат от набора транзакций зависит от порядка их применения.</p>
+<p>А вот карта того какой уровень изоляции от чего защищает.</p>
+<table>
+<thead>
+<tr>
+<th>Isolation Level</th>
+<th>Dirty Read</th>
+<th>Non repeatable Read</th>
+<th>Phantom Read</th>
+<th>Serialization Anomaly</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read uncommitted</td>
+<td>Possible</td>
+<td>Possible</td>
+<td>Possible</td>
+<td>Possible</td>
+</tr>
+<tr>
+<td>Read committed</td>
+<td>Not possible</td>
+<td>Possible</td>
+<td>Possible</td>
+<td>Possible</td>
+</tr>
+<tr>
+<td>Repeatable read</td>
+<td>Not possible</td>
+<td>Not possible</td>
+<td>Possible</td>
+<td>Possible</td>
+</tr>
+<tr>
+<td>Serializable</td>
+<td>Not possible</td>
+<td>Not possible</td>
+<td>Not possible</td>
+<td>Not possible</td>
+</tr>
+</tbody>
+</table>
+<p>Посмотрим подробнее уровни изоляций, их отличия и когда какой стоит использовать. Пойдем в направлении увеличения строгости.</p>
+<h2 id="read-uncommitted">Read Uncommitted</h2>
+<p>Минимальный уровень изоляции. На этом уровне запрещены только dirty writes.
+Этот уровень редко используется в коде приложений. Чаще его используют при ручном доступе в базу чтобы не заблокировать работающее приложение. Еще можно использовать для поиска ошибок при работе приложения с базой.
+На этом уровне DBMS практически не использует локи, поэтому выборка данных здесь может оказаться быстрее чем в других уровнях. Если ни одна из перечисленных проблем не является критичной или нет требований к точности данных (например, достаточно только примерно оценить количество строк в базе), то этот уровень можно использовать.</p>
+<h2 id="read-committed">Read Committed</h2>
+<p>Уровень изоляции по-умолчанию во многих DBMS.
+На этом уровне изоляции уже не может быть dirty reads, следовательно мы получаем гарантию, что прочитаем только закоммиченные данные. Однако, мы все равно можем получить разные данные при повторении одного и того же запроса.
+Если в общих словах, то при работе с данными создается лок на данных, которые мы собираемся изменять. Это означает, что на каждый запрос INSERT, DELETE или UPDATE DBMS создаст внутри себя мьютекс, привязанный к изменяемым данным. Этот мьютекс будет ограничивать любые другие запросы от операций с этими данными до окончания изменяющей транзакции. Интересный момент в том, что на SELECT запросы тоже создается мьютекс, но он удаляется после окончания работы запроса, а не транзакции(!).</p>
+<h2 id="repeatable-read">Repeatable Read</h2>
+<p>Этот уровень изоляции предоставляет нам гарантию, что мы будем оперировать данными, которые были на момент старта транзакции. Другими словами, внутри транзакции мы будем получать одни и те же данные сколько бы мы не повторяли запрос. На этом уровне проблема non repeatable read уходит. Строки, которые мы уже прочитали останутся теми же, даже если в другой транзакции произойдет их изменение. Однако, мы все равно сможем прочитать новые добавленные строки (phantom read).
+Такое поведение может быть реализовано разными способами.
+Например, в <a href="https://www.interdb.jp/pg/pgsql05.html">postgres в момент начала транзакции создается снапшот данных</a> и вся работа происходит с ним.
+А в <a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html">innodb любой запрос на изменение создает локи </a>и не отпускает их до конца транзакции. Кстати, в innodb <a href="https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html#:~:text=The%20default%20isolation%20level%20for,with%20the%20SET%20TRANSACTION%20statement.">этот уровень является дефолтным</a>.</p>
+<p>Этот уровень изоляции стоит использовать в случае, когда хочется быть уверенным, что данные не изменятся пока мы с ними работаем.</p>
+<h2 id="serializable">Serializable</h2>
+<p>Максимальный уровень изоляции. Фантомного чтения больше не будет.
+Сериализация означает полное отсутствие конкурентного доступа. То есть любые транзакции применяются одна после другой. На этом уровне нужно быть готовым ретраить запросы в базу или долго ждать завершения транзакции. Стоит использовать только когда считается недопустимым появление новых данных во время работы транзакции.
+Конечно, и на этом уровне можно устроить конфликт между двумя транзакциями. Они называются аномалиями сериализации (можно поискать по словам write skew и read only write skew).</p>
+<h2 id="ссылки">Ссылки</h2>
+<ul>
+<li><a href="https://www.geeksforgeeks.org/transaction-isolation-levels-dbms/">https://www.geeksforgeeks.org/transaction-isolation-levels-dbms/</a></li>
+<li><a href="https://www.postgresql.org/docs/current/sql-set-transaction.html">https://www.postgresql.org/docs/current/sql-set-transaction.html</a></li>
+<li><a href="https://www.postgresql.org/docs/current/transaction-iso.html">https://www.postgresql.org/docs/current/transaction-iso.html</a></li>
+<li><a href="https://sqlperformance.com/2014/04/t-sql-queries/the-serializable-isolation-level">https://sqlperformance.com/2014/04/t-sql-queries/the-serializable-isolation-level</a></li>
+<li><a href="https://wiki.postgresql.org/wiki/SSI">https://wiki.postgresql.org/wiki/SSI</a></li>
+<li><a href="https://www.javatpoint.com/dbms-lock-based-protocol">https://www.javatpoint.com/dbms-lock-based-protocol</a></li>
+</ul>
+</div></article>
+<footer class="py:24">
+    <div class="f:fade-30 f:14 mb:8"></div>
+    <div class="f:fade-60 f:12">Theme <a class="f:bold" href="https://github.com/serkodev/holy" _target="_blank">Holy</a></div>
+</footer></div>
+    </div>
+</body>
+
+</html>
