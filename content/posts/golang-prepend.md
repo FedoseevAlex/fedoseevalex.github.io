@@ -1,5 +1,5 @@
 +++
-title = 'Операция Prepend в golang'
+title = 'Slice prepend in golang'
 date = 2024-01-13T14:03:30+02:00
 draft = false
 +++
